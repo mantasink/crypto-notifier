@@ -23,6 +23,7 @@ public class Application {
 		Runnable task = () -> {
 			run();
 		};
+
 		executor.scheduleAtFixedRate(task, 0, 1, MINUTES);
 	}
 

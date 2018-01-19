@@ -20,26 +20,21 @@ public class CoinmarketcapService {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
 
 	/**
-	 * @return list of coins if not enough meeting threshold, else empty list
+	 * @return list of coins if threshold is not met, else empty list
 	 */
 	public static List<Coin> checkCoinPerformance() {
 		List<Coin> alert1hCoins = new ArrayList<>();
-		List<Coin> alert24hCoins = new ArrayList<>();
 		boolean bitcoinThresholdNotMet = false;
 
 		int i = 0;
 		for (Coin coin : getCoinsFromApi()) {
 			boolean threshold1hNotMet = coin.getPercentChange1h().compareTo(PropertyManager.THRESHOLD_PERCENT_1_H) < 1;
-			boolean threshold24NotMet = coin.getPercentChange24h().compareTo(PropertyManager.THRESHOLD_PERCENT_24_H) < 1;
 
-			if ("BTC".equals(coin.getSymbol()) && (threshold1hNotMet || threshold24NotMet)) {
+			if ("BTC".equals(coin.getSymbol()) && threshold1hNotMet) {
 				bitcoinThresholdNotMet = true;
 			}
 			if (threshold1hNotMet) {
 				alert1hCoins.add(coin);
-			}
-			if (threshold24NotMet) {
-				alert24hCoins.add(coin);
 			}
 
 			if (i++ >= PropertyManager.CHECK_COIN_AMOUNT) {
@@ -51,9 +46,6 @@ public class CoinmarketcapService {
 		// return coins if Bitcoin has fallen and THRESHOLD_COIN_AMOUNT alts of CHECK_COIN_AMOUNT has fallen too
 		if (bitcoinThresholdNotMet && alert1hCoins.size() >= PropertyManager.THRESHOLD_COIN_AMOUNT) {
 			return alert1hCoins;
-		}
-		if (bitcoinThresholdNotMet && alert24hCoins.size() >= PropertyManager.THRESHOLD_COIN_AMOUNT) {
-			return alert24hCoins;
 		}
 
 		return new ArrayList<>();
